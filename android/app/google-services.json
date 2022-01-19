@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "313906610444",
+    "firebase_url": "https://tdmapp-6b3e4-default-rtdb.firebaseio.com",
+    "project_id": "tdmapp-6b3e4",
+    "storage_bucket": "tdmapp-6b3e4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:313906610444:android:51259923448fe0cfc48929",
+        "android_client_info": {
+          "package_name": "com.tdm.tdmecommerce"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "313906610444-q2dllshchr64bt0jb01qcfss12au2qik.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDU6OWbRScdg5M_iV7V3imCpxG2so6w1-M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "313906610444-q2dllshchr64bt0jb01qcfss12au2qik.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
