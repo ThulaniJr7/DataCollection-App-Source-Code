@@ -4,6 +4,8 @@ import 'package:tdmecommerce/screens/complete_profile/complete_profile_screen.da
 import 'package:tdmecommerce/screens/details/details_screen.dart';
 import 'package:tdmecommerce/screens/forgot_password/forgot_password_screen.dart';
 import 'package:tdmecommerce/screens/home/home_screen.dart';
+import 'package:tdmecommerce/screens/home_dc/home_screen.dart';
+import 'package:tdmecommerce/screens/home_general/home_screen.dart';
 import 'package:tdmecommerce/screens/login_success/login_success_screen.dart';
 import 'package:tdmecommerce/screens/otp/otp_screen.dart';
 import 'package:tdmecommerce/screens/profile/profile_screen.dart';
@@ -24,6 +26,8 @@ final Map<String, WidgetBuilder> routes = {
   CompleteProfileScreen.routeName: (context) => CompleteProfileScreen(),
   OtpScreen.routeName: (context) => OtpScreen(),
   HomeScreen.routeName: (context) => HomeScreen(),
+  // HomeScreenDC.routeName: (context) => HomeScreenDC(),
+  // HomeScreenGen.routeName: (context) => HomeScreenGen(),
   DetailsScreen.routeName: (context) => DetailsScreen(),
   CartScreen.routeName: (context) => CartScreen(),
   ProfileScreen.routeName: (context) => ProfileScreen(),

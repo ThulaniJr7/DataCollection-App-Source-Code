@@ -86,6 +86,15 @@ class SpecialOffers extends StatelessWidget {
             ],
           ),
         ),
+        SizedBox(height: getProportionateScreenWidth(20)),
+        Padding(
+          padding:
+          EdgeInsets.symmetric(horizontal: getProportionateScreenWidth(20)),
+          child: SectionTitle(
+            title: "Our Services",
+            press: () {},
+          ),
+        ),
       ],
     );
   }

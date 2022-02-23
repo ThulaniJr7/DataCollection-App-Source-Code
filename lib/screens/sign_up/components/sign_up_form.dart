@@ -5,6 +5,7 @@ import 'package:tdmecommerce/helpers/screen_navigation.dart';
 import 'package:tdmecommerce/screens/registrations/distribution_center/dc_reg.dart';
 import 'package:tdmecommerce/screens/registrations/general/general_reg.dart';
 import 'package:tdmecommerce/screens/registrations/manufacturer/manufacturer_reg.dart';
+import 'package:tdmecommerce/screens/registrations/npo/npo_reg.dart';
 import 'package:tdmecommerce/screens/registrations/sales_agent/agent_reg.dart';
 import 'package:tdmecommerce/screens/sign_in/sign_in_screen.dart';
 import 'package:tdmecommerce/services/auth_services.dart';
@@ -51,7 +52,7 @@ class _SignUpFormState extends State<SignUpForm> {
       child: Column(
         children: [
 
-          // This should be the button to register a Manufacturer
+          // This is the button to register a Manufacturer
           DefaultButton(
             text: "Manufacturer Registration",
 
@@ -59,28 +60,12 @@ class _SignUpFormState extends State<SignUpForm> {
 
               changeScreen(context, registrationManufacturer());
 
-              // try{
-              //   UserCredential currentUser = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-              //       email: email,
-              //       password: conform_password);
-              //
-              // }
-              // catch (e) {
-              //   return e.toString();
-              // }
-              //
-              // if (_formKey.currentState.validate()) {
-              //   _formKey.currentState.save();
-              //
-              //   // if all are valid then go to success screen
-              //   Navigator.pushNamed(context, SignInScreen.routeName);
-              // }
             },
           ),
 
           SizedBox(height: getProportionateScreenHeight(30)),
 
-          // This should be the button to register a Distribution Center
+          // This is the button to register a Distribution Center
           DefaultButton(
             text: "Distribution Center Registration",
 
@@ -94,7 +79,7 @@ class _SignUpFormState extends State<SignUpForm> {
 
           SizedBox(height: getProportionateScreenHeight(30)),
 
-          // This should be the button to register a Sales Agent
+          // This is the button to register a Sales Agent
           DefaultButton(
             text: "Sales Agent Registration",
 
@@ -107,13 +92,26 @@ class _SignUpFormState extends State<SignUpForm> {
 
           SizedBox(height: getProportionateScreenHeight(30)),
 
-          // This should be the button to register a General Service Provider
+          // This is the button to register a General Service Provider
           DefaultButton(
             text: "General Provider Registration",
 
             press: () async {
 
               changeScreen(context, registrationGeneral());
+
+            },
+          ),
+
+          SizedBox(height: getProportionateScreenHeight(30)),
+
+          // This is the button to register a General Service Provider
+          DefaultButton(
+            text: "NPO Registration",
+
+            press: () async {
+
+              changeScreen(context, registrationNPO());
 
             },
           ),

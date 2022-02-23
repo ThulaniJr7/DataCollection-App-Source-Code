@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart';
 import 'package:tdmecommerce/components/custom_surfix_icon.dart';
 import 'package:tdmecommerce/components/default_button.dart';
 import 'package:tdmecommerce/components/form_error.dart';
@@ -21,11 +24,12 @@ class registrationManufacturer extends StatefulWidget {
 class _registrationManufacturerState extends State<registrationManufacturer> {
 
   final _formKey = GlobalKey<FormState>();
-  String email, password, conform_password, businessName, contactPerson, contactPersonNumber, contactPersonPosition, bizAdd1, bizAdd2, township, postalCode, companyRegNum, valueChoose;
+  String email, password, conform_password, businessName, contactPerson, contactPersonNumber, contactPersonPosition, bizAdd1, bizAdd2, township, postalCode, companyRegNum, value;
   final String userRole = "MN";
+  String types = "Manufacturer";
   bool remember = false;
   final List<String> errors = [];
-  List listItem = [
+  final List<String> items = [
     "Skin Care", "Hair Care", "Hygiene Care",
     "Pharmaceutical", "Food", "Non-Food"
   ];
@@ -78,6 +82,27 @@ class _registrationManufacturerState extends State<registrationManufacturer> {
                 children: [
                 buildBusinessNameField(),
             SizedBox(height: getProportionateScreenHeight(30)),
+            Container(
+                    // width: 400,
+                    margin: EdgeInsets.all(2),
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: Colors.grey, width: 1),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        hint: Text("Company Type"),
+                        value: value,
+                        iconSize: 36,
+                        icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
+                        isExpanded: true,
+                        items: items.map(buildMenuItem).toList(),
+                        onChanged: (value) => setState(() => this.value = value),
+                      ),
+                    ),
+                  ),
+            SizedBox(height: getProportionateScreenHeight(30)),
             buildBusinessAddress1Field(),
             SizedBox(height: getProportionateScreenHeight(30)),
             buildBusinessAddress2Field(),
@@ -106,60 +131,98 @@ class _registrationManufacturerState extends State<registrationManufacturer> {
 
               press: () async {
 
-                CollectionReference users = FirebaseFirestore.instance.collection("manufactureRegUser");
+                CollectionReference users = FirebaseFirestore.instance.collection("manufacturer_registration");
                 FirebaseAuth auth = FirebaseAuth.instance;
 
-                  try{
+                try
+                {
 
-                    UserCredential currentUser = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                        email: email,
-                        password: conform_password
+                  if(password == conform_password)
+                  {
+
+                    if(password.length > 7 && conform_password.length > 7)
+                    {
+
+                      if(businessName != null && contactPerson != null && contactPersonNumber != null && contactPersonPosition != null && bizAdd1 != null && bizAdd2 != null && township != null && postalCode != null && companyRegNum != null)
+                      {
+
+                        UserCredential currentUser = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                            email: email,
+                            password: conform_password
+                        );
+
+                        User updateUser = FirebaseAuth.instance.currentUser;
+                        userManufacSetup(businessName, value, bizAdd1, bizAdd2, township, postalCode, companyRegNum, contactPerson, contactPersonPosition, contactPersonNumber, userRole, email, conform_password);
+
+                      }
+                      else
+                      {
+                        Fluttertoast.showToast(
+                          msg: "Please complete all the fields!",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          backgroundColor: Colors.black,
+                          textColor: Colors.white,
+                          fontSize: 18,
+                        );
+                      }
+
+                    }
+                  }
+                  else
+                  {
+                    Fluttertoast.showToast(
+                      msg: "The Passwords entered don't match!",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.CENTER,
+                      backgroundColor: Colors.black,
+                      textColor: Colors.white,
+                      fontSize: 18,
+                    );
+                  }
+
+                  if (_formKey.currentState.validate()) {
+                    _formKey.currentState.save();
+
+                    Fluttertoast.showToast(
+                      msg: "Registration Successfully Captured!",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.CENTER,
+                      backgroundColor: Colors.black,
+                      textColor: Colors.white,
+                      fontSize: 18,
                     );
 
-                    User updateUser = FirebaseAuth.instance.currentUser;
-                    userManufacSetup(businessName, bizAdd1, bizAdd2, township, postalCode, companyRegNum, contactPerson, contactPersonPosition, contactPersonNumber, userRole, email, conform_password);
-
-                    if (_formKey.currentState.validate()) {
-                      _formKey.currentState.save();
-
-                      Fluttertoast.showToast(
-                        msg: "Registration Successfully Captured!",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.CENTER,
-                        backgroundColor: Colors.black,
-                        textColor: Colors.white,
-                        fontSize: 18,
-                      );
-
-                      Navigator.pushNamed(context, SignInScreen.routeName);
-                    }
-
+                    sendRegEmail(name: businessName, password: password, types: types, email: email );
+                    Navigator.pushNamed(context, SignInScreen.routeName);
                   }
-                  on FirebaseAuthException catch (e) {
-                    if (e.code == 'weak-password'){
-                      Fluttertoast.showToast(
-                        msg: "The password provided is too weak!",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.CENTER,
-                        backgroundColor: Colors.black,
-                        textColor: Colors.white,
-                        fontSize: 18,
-                      );
-                      // print('The password provided is too weak.');
-                    } else if (e.code == 'email-already-in-use') {
 
-                      Fluttertoast.showToast(
-                        msg: "The account already exists for that email!",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.CENTER,
-                        backgroundColor: Colors.black,
-                        textColor: Colors.white,
-                        fontSize: 18,
-                      );
-                      // print('The account already exists for that email.');
-                    }
-                    // print(e.toString());
+                }
+                on FirebaseAuthException catch (e) {
+                  if (e.code == 'weak-password'){
+                    Fluttertoast.showToast(
+                      msg: "The password provided is too weak!",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.CENTER,
+                      backgroundColor: Colors.black,
+                      textColor: Colors.white,
+                      fontSize: 18,
+                    );
+                    // print('The password provided is too weak.');
+                  } else if (e.code == 'email-already-in-use') {
+
+                    Fluttertoast.showToast(
+                      msg: "The account already exists for that email!",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.CENTER,
+                      backgroundColor: Colors.black,
+                      textColor: Colors.white,
+                      fontSize: 18,
+                    );
+                    // print('The account already exists for that email.');
                   }
+                  // print(e.toString());
+                }
 
               },
             ),
@@ -183,8 +246,33 @@ class _registrationManufacturerState extends State<registrationManufacturer> {
     );
   }
 
-  // Business Name Input Field
+  Future sendRegEmail({name, password, types, email}) async {
+    final service_id = "service_fktl86m";
+    final template_id = "template_5v9bjuk";
+    final user_id = "user_BoXVNfHkfcOalH8tZFNvs";
+    var url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
 
+    final response = await post(url, headers:
+    {
+      'origin': "http://localhost",
+      'Content-Type': "application/json"
+    },
+        body: jsonEncode({
+          'service_id': service_id,
+          'template_id': template_id,
+          'user_id': user_id,
+          'template_params': {
+            'name': name,
+            'password': password,
+            'types': types,
+            'email': email,
+          }
+
+        }));
+
+  }
+
+  // Business Name Input Field
   TextFormField buildBusinessNameField() {
     return TextFormField(
       onSaved: (newValue) => businessName = newValue,
@@ -208,10 +296,19 @@ class _registrationManufacturerState extends State<registrationManufacturer> {
         // If  you are using latest version of flutter then lable text and hint text shown like this
         // if you r using flutter less then 1.20.* then maybe this is not working properly
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User Icon.svg"),
+        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User.svg"),
       ),
     );
   }
+
+  //This is the Dropdown Menu
+  DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
+    value: item,
+    child: Text(
+      item,
+      style: TextStyle(fontSize: 14, color: Colors.black),
+    ),
+  );
 
   // Contact Person Position Input Field
   TextFormField buildContactPersonPosField() {
@@ -237,7 +334,7 @@ class _registrationManufacturerState extends State<registrationManufacturer> {
         // If  you are using latest version of flutter then lable text and hint text shown like this
         // if you r using flutter less then 1.20.* then maybe this is not working properly
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User Icon.svg"),
+        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User.svg"),
       ),
     );
   }
@@ -266,7 +363,7 @@ class _registrationManufacturerState extends State<registrationManufacturer> {
         // If  you are using latest version of flutter then lable text and hint text shown like this
         // if you r using flutter less then 1.20.* then maybe this is not working properly
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User Icon.svg"),
+        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User.svg"),
       ),
     );
   }

@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart';
 import 'package:tdmecommerce/components/custom_surfix_icon.dart';
 import 'package:tdmecommerce/components/default_button.dart';
 import 'package:tdmecommerce/components/form_error.dart';
@@ -21,11 +24,12 @@ class registrationGeneral extends StatefulWidget {
 class _registrationGeneralState extends State<registrationGeneral> {
 
   final _formKey = GlobalKey<FormState>();
-  String email, password, conform_password, name, surname, phoneNumber, bizAdd1, bizAdd2, township, postalCode, serviceDesc, valueChoose;
+  String email, password, conform_password, name, surname, phoneNumber, bizAdd1, bizAdd2, township, postalCode, serviceDesc, value;
   final String userRole = "GS";
+  String types = "General Service Provider";
   bool remember = false;
   final List<String> errors = [];
-  List listItem = [
+  final List<String> items = [
     "Logistics", "Beauty Care", "Tailor", "Delivery Services",
     "Funeral Services", "Catering Services", "Electrician", "Plumber"
   ];
@@ -82,6 +86,27 @@ class _registrationGeneralState extends State<registrationGeneral> {
                       SizedBox(height: getProportionateScreenHeight(30)),
                       buildPhoneNumField(),
                       SizedBox(height: getProportionateScreenHeight(30)),
+                      Container(
+                              // width: 400,
+                              margin: EdgeInsets.all(2),
+                              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(color: Colors.grey, width: 1),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  hint: Text("General Type"),
+                                  value: value,
+                                  iconSize: 36,
+                                  icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
+                                  isExpanded: true,
+                                  items: items.map(buildMenuItem).toList(),
+                                  onChanged: (value) => setState(() => this.value = value),
+                                ),
+                              ),
+                            ),
+                      SizedBox(height: getProportionateScreenHeight(30)),
                       buildBusinessAddress1Field(),
                       SizedBox(height: getProportionateScreenHeight(30)),
                       buildBusinessAddress2Field(),
@@ -104,59 +129,98 @@ class _registrationGeneralState extends State<registrationGeneral> {
 
                         press: () async {
 
-                          CollectionReference users = FirebaseFirestore.instance.collection("generalServRegUser");
+                          CollectionReference users = FirebaseFirestore.instance.collection("service_provider_registration");
                           FirebaseAuth auth = FirebaseAuth.instance;
 
-                          try{
+                          try
+                          {
 
-                          UserCredential currentUser = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                                              email: email,
-                                              password: conform_password
-                          );
+                            if(password == conform_password)
+                            {
 
-                          User updateUser = FirebaseAuth.instance.currentUser;
-                          userGenProvSetup(name, surname, phoneNumber, bizAdd1, bizAdd2, township, postalCode, serviceDesc, userRole, email, conform_password);
+                              if(password.length > 7 && conform_password.length > 7)
+                              {
 
-                              if (_formKey.currentState.validate()) {
-                                _formKey.currentState.save();
+                                if(name != null && surname != null && value != null && phoneNumber != null && township != null && postalCode != null && bizAdd1 != null && bizAdd2 != null && township != null && postalCode != null && serviceDesc != null)
+                                {
 
-                                Fluttertoast.showToast(
-                                  msg: "Registration Successfully Captured!",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  backgroundColor: Colors.black,
-                                  textColor: Colors.white,
-                                  fontSize: 18,
-                                );
+                                  UserCredential currentUser = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                                      email: email,
+                                      password: conform_password
+                                  );
 
-                                Navigator.pushNamed(context, SignInScreen.routeName);
+                                  User updateUser = FirebaseAuth.instance.currentUser;
+                                  userGenProvSetup(name, surname, value, phoneNumber, bizAdd1, bizAdd2, township, postalCode, serviceDesc, userRole, email, conform_password);
+
+                                }
+                                else
+                                {
+                                  Fluttertoast.showToast(
+                                    msg: "Please complete all the fields!",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.CENTER,
+                                    backgroundColor: Colors.black,
+                                    textColor: Colors.white,
+                                    fontSize: 18,
+                                  );
+                                }
+
                               }
-
-                            } on FirebaseAuthException catch (e) {
-                              if (e.code == 'weak-password'){
-                                Fluttertoast.showToast(
-                                  msg: "The password provided is too weak!",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  backgroundColor: Colors.black,
-                                  textColor: Colors.white,
-                                  fontSize: 18,
-                                );
-                                // print('The password provided is too weak.');
-                              } else if (e.code == 'email-already-in-use') {
-
-                                Fluttertoast.showToast(
-                                  msg: "The account already exists for that email!",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  backgroundColor: Colors.black,
-                                  textColor: Colors.white,
-                                  fontSize: 18,
-                                );
-                                // print('The account already exists for that email.');
-                              }
-                              // print(e.toString());
                             }
+                            else
+                            {
+                              Fluttertoast.showToast(
+                                msg: "The Passwords entered don't match!",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                backgroundColor: Colors.black,
+                                textColor: Colors.white,
+                                fontSize: 18,
+                              );
+                            }
+
+                            if (_formKey.currentState.validate()) {
+                              _formKey.currentState.save();
+
+                              Fluttertoast.showToast(
+                                msg: "Registration Successfully Captured!",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                backgroundColor: Colors.black,
+                                textColor: Colors.white,
+                                fontSize: 18,
+                              );
+
+                              sendRegEmail(name: name, password: password, types: types, email: email );
+                              Navigator.pushNamed(context, SignInScreen.routeName);
+                            }
+
+                          }
+                          on FirebaseAuthException catch (e) {
+                            if (e.code == 'weak-password'){
+                              Fluttertoast.showToast(
+                                msg: "The password provided is too weak!",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                backgroundColor: Colors.black,
+                                textColor: Colors.white,
+                                fontSize: 18,
+                              );
+                              // print('The password provided is too weak.');
+                            } else if (e.code == 'email-already-in-use') {
+
+                              Fluttertoast.showToast(
+                                msg: "The account already exists for that email!",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                backgroundColor: Colors.black,
+                                textColor: Colors.white,
+                                fontSize: 18,
+                              );
+                              // print('The account already exists for that email.');
+                            }
+                            // print(e.toString());
+                          }
 
                         },
                       ),
@@ -175,8 +239,33 @@ class _registrationGeneralState extends State<registrationGeneral> {
     );
   }
 
-  // Name Input Field
+  Future sendRegEmail({name, password, types, email}) async {
+    final service_id = "service_fktl86m";
+    final template_id = "template_5v9bjuk";
+    final user_id = "user_BoXVNfHkfcOalH8tZFNvs";
+    var url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
 
+    final response = await post(url, headers:
+    {
+      'origin': "http://localhost",
+      'Content-Type': "application/json"
+    },
+        body: jsonEncode({
+          'service_id': service_id,
+          'template_id': template_id,
+          'user_id': user_id,
+          'template_params': {
+            'name': name,
+            'password': password,
+            'types': types,
+            'email': email,
+          }
+
+        }));
+
+  }
+
+  // Name Input Field
   TextFormField buildNameField() {
     return TextFormField(
       onSaved: (newValue) => name = newValue,
@@ -200,7 +289,7 @@ class _registrationGeneralState extends State<registrationGeneral> {
         // If  you are using latest version of flutter then lable text and hint text shown like this
         // if you r using flutter less then 1.20.* then maybe this is not working properly
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User Icon.svg"),
+        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User.svg"),
       ),
     );
   }
@@ -229,10 +318,19 @@ class _registrationGeneralState extends State<registrationGeneral> {
         // If  you are using latest version of flutter then lable text and hint text shown like this
         // if you r using flutter less then 1.20.* then maybe this is not working properly
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User Icon.svg"),
+        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User.svg"),
       ),
     );
   }
+
+  //This is the Dropdown Menu
+  DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
+    value: item,
+    child: Text(
+      item,
+      style: TextStyle(fontSize: 14, color: Colors.black),
+    ),
+  );
 
   // Phone Number Input Field
   TextFormField buildPhoneNumField() {

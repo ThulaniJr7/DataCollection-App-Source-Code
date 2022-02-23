@@ -6,7 +6,7 @@ import 'package:tdmecommerce/helpers/screen_navigation.dart';
 class AuthService {
 
   final FirebaseAuth _auth;
-  // final CollectionReference salesCollection = FirebaseFirestore.instance.collection('genUserTest');
+  final CollectionReference profileList = FirebaseFirestore.instance.collection('sales_agent_registrations');
   AuthService(this._auth);
   Stream<User> get authStateChanges => _auth.idTokenChanges();
 

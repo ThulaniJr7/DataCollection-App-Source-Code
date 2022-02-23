@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tdmecommerce/components/custom_surfix_icon.dart';
 import 'package:tdmecommerce/components/form_error.dart';
+import 'package:tdmecommerce/helpers/screen_navigation.dart';
+import 'package:tdmecommerce/screens/dc_page/body.dart';
 import 'package:tdmecommerce/screens/forgot_password/forgot_password_screen.dart';
+import 'package:tdmecommerce/screens/generals_page/body.dart';
+import 'package:tdmecommerce/screens/home/home_screen.dart';
+import 'package:tdmecommerce/screens/home_dc/components/body.dart';
+import 'package:tdmecommerce/screens/home_dc/home_screen.dart';
+import 'package:tdmecommerce/screens/home_general/home_screen.dart';
 import 'package:tdmecommerce/screens/login_success/login_success_screen.dart';
 
 import '../../../components/default_button.dart';
@@ -63,14 +70,14 @@ class _SignFormState extends State<SignForm> {
               // ),
               // Text("Remember me"),
               Spacer(),
-              // GestureDetector(
-              //   onTap: () => Navigator.pushNamed(
-              //       context, ForgotPasswordScreen.routeName),
-              //   child: Text(
-              //     "Forgot Password",
-              //     style: TextStyle(decoration: TextDecoration.underline),
-              //   ),
-              // )
+              GestureDetector(
+                onTap: () => Navigator.pushNamed(
+                    context, ForgotPasswordScreen.routeName),
+                child: Text(
+                  "Forgot Password",
+                  style: TextStyle(decoration: TextDecoration.underline),
+                ),
+              )
             ],
           ),
           FormError(errors: errors),
@@ -81,21 +88,51 @@ class _SignFormState extends State<SignForm> {
 
                 signIn(emailController.text, passwordController.text);
 
-                // This is the validation form of the login credentials that still need to be configured
-                // if (_formKey.currentState.validate()) {
-                //   _formKey.currentState.save();
-                //   // if all are valid then go to success screen
-                //
-                //   await _auth.signInWithEmailAndPassword(email: email, password: password).then((uid) =>
-                //   {
-                //     Navigator.pushNamed(context, LoginSuccessScreen.routeName),
-                //     Fluttertoast.showToast(msg: "Login Successful")
-                //   });
-                //
-                // }
-
             },
           ),
+          SizedBox(height: getProportionateScreenHeight(20)),
+          // DefaultButton(
+          //   text: "DC Home Page",
+          //
+          //   press: () async {
+          //
+          //     Navigator.pushNamed(context, HomeScreenDC.routeName);
+          //     // changeScreen(context, BodyDC());
+          //
+          //   },
+          // ),
+          // SizedBox(height: getProportionateScreenHeight(20)),
+          // DefaultButton(
+          //   text: "General Service Home Page",
+          //
+          //   press: () async {
+          //
+          //     Navigator.pushNamed(context, HomeScreenGen.routeName);
+          //
+          //   },
+          // ),
+          // SizedBox(height: getProportionateScreenHeight(20)),
+          // DefaultButton(
+          //   text: "Manufacturer Home Page",
+          //
+          //   press: () async {
+          //
+          //     // Navigator.pushNamed(context, HomeScreenMan.routeName);
+          //
+          //   },
+          // ),
+          // SizedBox(height: getProportionateScreenHeight(20)),
+          // DefaultButton(
+          //   text: "Sales Agent Home Page",
+          //
+          //   press: () async {
+          //
+          //     // Navigator.pushNamed(context, HomeScreenSA.routeName);
+          //
+          //   },
+          // ),
+          // SizedBox(height: getProportionateScreenHeight(20)),
+          // SizedBox(height: getProportionateScreenHeight(20)),
         ],
       ),
     );
@@ -242,4 +279,5 @@ class _SignFormState extends State<SignForm> {
       ),
     );
   }
+
 }

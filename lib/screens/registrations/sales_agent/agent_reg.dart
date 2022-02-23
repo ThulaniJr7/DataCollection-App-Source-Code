@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart';
 import 'package:tdmecommerce/components/custom_surfix_icon.dart';
 import 'package:tdmecommerce/components/default_button.dart';
 import 'package:tdmecommerce/components/form_error.dart';
@@ -23,6 +26,7 @@ class _registrationSalesAgentState extends State<registrationSalesAgent> {
   final _formKey = GlobalKey<FormState>();
   String email, password, conform_password, name, surname, phoneNumber, bizAdd1, bizAdd2, township, postalCode, age, idNum, valueChoose;
   final String userRole = "SA";
+  String types = "Sales Agent";
   bool remember = false;
   final List<String> errors = [];
 
@@ -100,62 +104,101 @@ class _registrationSalesAgentState extends State<registrationSalesAgent> {
                       DefaultButton(
                         text: "Continue",
 
+                        // Need to create additional code that will send an email to the user after registration
                         press: () async {
 
-                          CollectionReference users = FirebaseFirestore.instance.collection("salesAgentRegUser");
+                          CollectionReference users = FirebaseFirestore.instance.collection("sales_agent_registration");
                           FirebaseAuth auth = FirebaseAuth.instance;
 
-                            try{
+                          try
+                          {
 
-                              UserCredential currentUser = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                                                  email: email,
-                                                  password: conform_password
+                            if(password == conform_password)
+                            {
+
+                              if(password.length > 7 && conform_password.length > 7)
+                              {
+
+                                if(name != null && surname != null && age != null && phoneNumber != null && township != null && postalCode != null && bizAdd1 != null && bizAdd2 != null && township != null && postalCode != null && idNum != null)
+                                {
+
+                                  UserCredential currentUser = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                                      email: email,
+                                      password: conform_password
+                                  );
+
+                                  User updateUser = FirebaseAuth.instance.currentUser;
+                                  userSalesAgentSetup(name, surname, phoneNumber, bizAdd1, bizAdd2, township, postalCode, age, idNum, userRole, email, conform_password);
+
+                                }
+                                else
+                                {
+                                  Fluttertoast.showToast(
+                                    msg: "Please complete all the fields!",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.CENTER,
+                                    backgroundColor: Colors.black,
+                                    textColor: Colors.white,
+                                    fontSize: 18,
+                                  );
+                                }
+
+                              }
+                            }
+                            else
+                            {
+                              Fluttertoast.showToast(
+                                msg: "The Passwords entered don't match!",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                backgroundColor: Colors.black,
+                                textColor: Colors.white,
+                                fontSize: 18,
+                              );
+                            }
+
+                            if (_formKey.currentState.validate()) {
+                              _formKey.currentState.save();
+
+                              Fluttertoast.showToast(
+                                msg: "Registration Successfully Captured!",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                backgroundColor: Colors.black,
+                                textColor: Colors.white,
+                                fontSize: 18,
                               );
 
-                              User updateUser = FirebaseAuth.instance.currentUser;
-                              userSalesAgentSetup(name, surname, phoneNumber, bizAdd1, bizAdd2, township, postalCode, age, idNum, userRole, email, conform_password);
-
-                              if (_formKey.currentState.validate()) {
-                                _formKey.currentState.save();
-
-                                Fluttertoast.showToast(
-                                  msg: "Registration Successfully Captured!",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  backgroundColor: Colors.black,
-                                  textColor: Colors.white,
-                                  fontSize: 18,
-                                );
-
-                                Navigator.pushNamed(context, SignInScreen.routeName);
-                              }
-
+                              sendRegEmail(name: name, password: password, types: types, email: email );
+                              Navigator.pushNamed(context, SignInScreen.routeName);
                             }
-                            on FirebaseAuthException catch (e) {
-                              if (e.code == 'weak-password'){
-                                Fluttertoast.showToast(
-                                  msg: "The password provided is too weak!",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  backgroundColor: Colors.black,
-                                  textColor: Colors.white,
-                                  fontSize: 18,
-                                );
-                                // print('The password provided is too weak.');
-                              } else if (e.code == 'email-already-in-use') {
 
-                                Fluttertoast.showToast(
-                                  msg: "The account already exists for that email!",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  backgroundColor: Colors.black,
-                                  textColor: Colors.white,
-                                  fontSize: 18,
-                                );
-                                // print('The account already exists for that email.');
-                              }
-                              // print(e.toString());
+                          }
+                          on FirebaseAuthException catch (e) {
+                            if (e.code == 'weak-password'){
+                              Fluttertoast.showToast(
+                                msg: "The password provided is too weak!",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                backgroundColor: Colors.black,
+                                textColor: Colors.white,
+                                fontSize: 18,
+                              );
+                              // print('The password provided is too weak.');
+                            } else if (e.code == 'email-already-in-use') {
+
+                              Fluttertoast.showToast(
+                                msg: "The account already exists for that email!",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                backgroundColor: Colors.black,
+                                textColor: Colors.white,
+                                fontSize: 18,
+                              );
+                              // print('The account already exists for that email.');
                             }
+                            // print(e.toString());
+                          }
 
                         },
                       ),
@@ -177,6 +220,32 @@ class _registrationSalesAgentState extends State<registrationSalesAgent> {
         ),
       ),
     );
+  }
+
+  Future sendRegEmail({name, password, types, email}) async {
+    final service_id = "service_fktl86m";
+    final template_id = "template_5v9bjuk";
+    final user_id = "user_BoXVNfHkfcOalH8tZFNvs";
+    var url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+
+    final response = await post(url, headers:
+    {
+      'origin': "http://localhost",
+      'Content-Type': "application/json"
+    },
+        body: jsonEncode({
+          'service_id': service_id,
+          'template_id': template_id,
+          'user_id': user_id,
+          'template_params': {
+            'name': name,
+            'password': password,
+            'types': types,
+            'email': email,
+          }
+
+        }));
+
   }
 
   // Name Input Field
@@ -203,7 +272,7 @@ class _registrationSalesAgentState extends State<registrationSalesAgent> {
         // If  you are using latest version of flutter then lable text and hint text shown like this
         // if you r using flutter less then 1.20.* then maybe this is not working properly
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User Icon.svg"),
+        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User.svg"),
       ),
     );
   }
@@ -232,7 +301,7 @@ class _registrationSalesAgentState extends State<registrationSalesAgent> {
         // If  you are using latest version of flutter then lable text and hint text shown like this
         // if you r using flutter less then 1.20.* then maybe this is not working properly
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User Icon.svg"),
+        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User.svg"),
       ),
     );
   }
@@ -406,7 +475,7 @@ class _registrationSalesAgentState extends State<registrationSalesAgent> {
         // If  you are using latest version of flutter then lable text and hint text shown like this
         // if you r using flutter less then 1.20.* then maybe this is not working properly
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User Icon.svg"),
+        suffixIcon: CustomSurffixIcon(svgIcon: "assets/icons/User.svg"),
       ),
     );
   }
